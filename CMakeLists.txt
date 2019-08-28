@@ -28,15 +28,6 @@ SET(G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator g2o_solver_slam2d_li
 
 include_directories(${EIGEN3_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR}) 
 
-add_library(loader STATIC
-  loader.h
-  loader.cc
-)
-
-target_link_libraries(loader
-  ${OpenCV_LIBS}
-)
-
 add_library(depth_generator STATIC
   depth_generator.h
   depth_generator.cc
@@ -70,7 +61,7 @@ add_library(slam_work STATIC
 )
 
 target_link_libraries(slam_work
-  loader depth_generator orb_matcher icp_translator 
+  depth_generator orb_matcher icp_translator 
   ${OpenCV_LIBS}
 )
 
