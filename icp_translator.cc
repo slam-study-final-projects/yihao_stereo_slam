@@ -1,22 +1,25 @@
 #include "icp_translator.h"
 
-void IcpTranslator::SetPointsAndMatches(const vector<cv::Point3f>& depth_points1, const vector<cv::Point3f>& depth_points2, const vector<cv::DMatch>& matches){
-	depth_points1_ = depth_points1;
-	depth_points2_ = depth_points2;
-	matches_ = matches;
+void IcpTranslator::SetPointsAndMatches(
+    const vector<cv::Point3f> &depth_points1,
+    const vector<cv::Point3f> &depth_points2,
+    const vector<cv::DMatch> &matches) {
+  depth_points1_ = depth_points1;
+  depth_points2_ = depth_points2;
+  matches_ = matches;
 }
 
-void IcpTranslator::Run(){
+void IcpTranslator::Run() {
 
   vector<Eigen::Vector3d> pi_g, pi_e;
 
   for (int k = 0; k < matches_.size(); ++k) {
     pi_g.emplace_back(depth_points1_[matches_[k].queryIdx].x,
-    		depth_points1_[matches_[k].queryIdx].y,
-    		depth_points1_[matches_[k].queryIdx].z);
+                      depth_points1_[matches_[k].queryIdx].y,
+                      depth_points1_[matches_[k].queryIdx].z);
     pi_e.emplace_back(depth_points2_[matches_[k].trainIdx].x,
-    		depth_points2_[matches_[k].trainIdx].y,
-    		depth_points2_[matches_[k].trainIdx].z);
+                      depth_points2_[matches_[k].trainIdx].y,
+                      depth_points2_[matches_[k].trainIdx].z);
   }
 
   // Compute the mass center of it.
@@ -46,12 +49,11 @@ void IcpTranslator::Run(){
 
   // SVD
   Eigen::JacobiSVD<Eigen::MatrixXd> svd(
-      W, Eigen::ComputeFullV |
-             Eigen::ComputeFullU); // ComputeFull vs ComputeThin
+      W,
+      Eigen::ComputeFullV | Eigen::ComputeFullU); // ComputeFull vs ComputeThin
   Eigen::MatrixXd U = svd.matrixU();
   Eigen::MatrixXd V = svd.matrixV();
 
   R_ = U * V.transpose(); // 计算得到R
   t_ = p_gc - R_ * p_ec;
-
 }

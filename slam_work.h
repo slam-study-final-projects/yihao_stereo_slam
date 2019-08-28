@@ -11,14 +11,25 @@
 #include <vector>
 
 #include "depth_generator.h"
+#include "icp_translator.h"
+#include "orb_matcher.h"
+
+using namespace std;
 
 class SlamWork {
-	public:
-	 SlamWork();
-	 ~SlamWork() = default;
-	 // bool LoadCalibParams(const std::string& path);
-	 bool ComputePose();
+public:
+  SlamWork();
+  ~SlamWork() = default;
+  void SetParams(double fx, double fy, double cx, double cy, double d);
+  void ComputePose();
 
-	 cv::Mat K_;
-   double fx, fy, cx, cy, d;
+  string input_path_;
+  int pose_number_;
+
+  DepthGenerator depth_generator_;
+  OrbMatcher orb_matcher_;
+  IcpTranslator icp_translator_;
+
+  Eigen::Matrix3d R_world_;
+  Eigen::Vector3d t_world_;
 };

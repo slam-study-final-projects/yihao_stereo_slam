@@ -1,6 +1,9 @@
 #include "orb_matcher.h"
 
 using namespace std;
+
+OrbMatcher::OrbMatcher() : fx_(0), fy_(0), cx_(0), cy_(0), d_(0) {}
+
 void OrbMatcher::SetGrayImages(const cv::Mat &first, const cv::Mat &second) {
   first_gray_img_ = first.clone();
   second_gray_img_ = second.clone();
@@ -13,9 +16,10 @@ void OrbMatcher::SetDepthImages(const cv::Mat &first, const cv::Mat &second) {
   return;
 }
 
-void OrbMatcher::SetParams(double fx, double fy, double cx, double cy, double d){
-	fx_ = fx, fy_ = fy , cx_ = cx, cy_ = cy, d_ = d;
-	return;
+void OrbMatcher::SetParams(double fx, double fy, double cx, double cy,
+                           double d) {
+  fx_ = fx, fy_ = fy, cx_ = cx, cy_ = cy, d_ = d;
+  return;
 }
 
 std::vector<cv::DMatch> OrbMatcher::Run() {
@@ -31,7 +35,7 @@ std::vector<cv::DMatch> OrbMatcher::Run() {
       keypoints.erase(keypoints.begin() + i);
       i--;
     } else {
-    	depth_points1_.emplace_back(
+      depth_points1_.emplace_back(
           (static_cast<double>(keypoints[i].pt.x) - cx_) / fx_ * z,
           (static_cast<double>(keypoints[i].pt.y) - cy_) / fy_ * z, z);
       image_points.emplace_back(keypoints[i].pt.x, keypoints[i].pt.y);
@@ -66,7 +70,7 @@ std::vector<cv::DMatch> OrbMatcher::Run() {
       keypoints2.erase(keypoints2.begin() + i);
       i--;
     } else {
-    	depth_points2_.emplace_back(
+      depth_points2_.emplace_back(
           (static_cast<double>(keypoints2[i].pt.x) - cx_) / fx_ * z,
           (static_cast<double>(keypoints2[i].pt.y) - cy_) / fy_ * z, z);
       image_points2.emplace_back(keypoints2[i].pt.x, keypoints2[i].pt.y);
@@ -156,23 +160,24 @@ void OrbMatcher::BfMatch(const vector<DescType> &desc1,
   // find matches between desc1 and desc2.
   for (int i = 0; i < desc1.size(); ++i) {
     if (desc1[i].size() == 0)
-      continue;  // 判断输入的特征是否有效，无效则跳过
+      continue; // 判断输入的特征是否有效，无效则跳过
     else {
       int idx(-1), dist(256);
       for (int j = 0; j < desc2.size(); ++j) {
         if (desc2[j].size() == 0)
-          continue;  // 判断待匹配点的特征是否有效，无效则跳过
+          continue; // 判断待匹配点的特征是否有效，无效则跳过
         else {
           int this_dist(0);
           for (int k = 0; k < 256; ++k)
-            if (desc1[i][k] != desc2[j][k]) this_dist++;  // 汉明距离
-          if (this_dist <= d_max && this_dist < dist) {   // 阈值判断
+            if (desc1[i][k] != desc2[j][k])
+              this_dist++;                              // 汉明距离
+          if (this_dist <= d_max && this_dist < dist) { // 阈值判断
             dist = this_dist;
             idx = j;
           }
         }
       }
-      if (idx != -1) {  // 填充匹配成功的关键点对
+      if (idx != -1) { // 填充匹配成功的关键点对
         cv::DMatch m;
         m.queryIdx = i;
         m.trainIdx = idx;
@@ -193,25 +198,25 @@ void OrbMatcher::ComputeAngle(const cv::Mat &image,
                               vector<cv::KeyPoint> &keypoints) {
   int half_patch_size = 8;
   for (auto &kp : keypoints) {
-    kp.angle = 0;  // compute kp.angle
+    kp.angle = 0; // compute kp.angle
     if ((kp.pt.x < half_patch_size) || (kp.pt.y < half_patch_size) ||
         (kp.pt.x > (image.cols - half_patch_size)) ||
         (kp.pt.y > (image.rows - half_patch_size)))
-      continue;  // 判断范围，如果能用去除vector可能更严谨一些
+      continue; // 判断范围，如果能用去除vector可能更严谨一些
     else {
-      double m01(0), m10(0);  // 初始化矩
+      double m01(0), m10(0); // 初始化矩
       for (int du = -half_patch_size; du < half_patch_size; ++du) {
         for (int dv = -half_patch_size; dv < half_patch_size; ++dv) {
           m01 += static_cast<double>(
-              (dv)*image.at<uchar>(kp.pt.y + dv, kp.pt.x + du));  // 公式计算
+              (dv)*image.at<uchar>(kp.pt.y + dv, kp.pt.x + du)); // 公式计算
           m10 += static_cast<double>(
               (du)*image.at<uchar>(kp.pt.y + dv, kp.pt.x + du));
         }
       }
       kp.angle =
           atan2(m01, m10) / pi *
-          180.0;  // 角度弧度转换,
-                  // atan2(y,x)可以对应360度完整的角度空间，而atan(y/x)则要麻烦一些
+          180.0; // 角度弧度转换,
+                 // atan2(y,x)可以对应360度完整的角度空间，而atan(y/x)则要麻烦一些
     }
   }
   return;
@@ -486,7 +491,7 @@ void OrbMatcher::ComputeORBDesc(const cv::Mat &image,
     DescType d(256, false);
     for (int i = 0; i < 256; i++) {
       // START YOUR CODE HERE (~7 lines)
-      float angle_rad(kp.angle / 180.0f * pi);  // 注意弧度角度转换
+      float angle_rad(kp.angle / 180.0f * pi); // 注意弧度角度转换
       float ppu(cos(angle_rad) * ORB_pattern[i * 4] -
                 sin(angle_rad) * ORB_pattern[i * 4 + 1]),
           ppv(sin(angle_rad) * ORB_pattern[i * 4] +
@@ -494,7 +499,7 @@ void OrbMatcher::ComputeORBDesc(const cv::Mat &image,
           qpu(cos(angle_rad) * ORB_pattern[i * 4 + 2] -
               sin(angle_rad) * ORB_pattern[i * 4 + 3]),
           qpv(sin(angle_rad) * ORB_pattern[i * 4 + 2] +
-              cos(angle_rad) * ORB_pattern[i * 4 + 3]);  // 参考公式生成坐标值
+              cos(angle_rad) * ORB_pattern[i * 4 + 3]); // 参考公式生成坐标值
       if ((kp.pt.x + ORB_pattern[i * 4]) < 0 ||
           (kp.pt.x + ORB_pattern[i * 4 + 2]) < 0 || (kp.pt.x + ppu) < 0 ||
           (kp.pt.x + qpu) < 0 ||
@@ -509,14 +514,14 @@ void OrbMatcher::ComputeORBDesc(const cv::Mat &image,
           (kp.pt.y + ORB_pattern[i * 4 + 3]) > (image.rows - 1) ||
           (kp.pt.y + ppv) > (image.rows - 1) ||
           (kp.pt.y + qpv) > (image.rows - 1)) {
-        d.clear();  // if kp goes outside, set d.clear()
+        d.clear(); // if kp goes outside, set d.clear()
         break;
       }
       d[i] = image.at<uchar>(kp.pt.y + ppv, kp.pt.x + ppu) >
                      image.at<uchar>(kp.pt.y + qpv, kp.pt.x + qpu)
                  ? 0
-                 : 1;  // 采用三目运算符比较大小
-                       // END YOUR CODE HERE
+                 : 1; // 采用三目运算符比较大小
+                      // END YOUR CODE HERE
     }
     desc.push_back(d);
   }
