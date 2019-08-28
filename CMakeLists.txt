@@ -28,5 +28,51 @@ SET(G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator g2o_solver_slam2d_li
 
 include_directories(${EIGEN3_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR}) 
 
+add_library(loader STATIC
+  loader.h
+  loader.cc
+)
+
+target_link_libraries(loader
+  ${OpenCV_LIBS}
+)
+
+add_library(depth_generator STATIC
+  depth_generator.h
+  depth_generator.cc
+)
+
+target_link_libraries(depth_generator
+  ${OpenCV_LIBS}
+)
+
+add_library(orb_matcher STATIC
+  orb_matcher.h
+  orb_matcher.cc
+)
+
+target_link_libraries(orb_matcher
+  ${OpenCV_LIBS}
+)
+
+add_library(icp_translator STATIC
+  icp_translator.h
+  icp_translator.cc
+)
+
+target_link_libraries(icp_translator
+  ${OpenCV_LIBS}
+)
+
+add_library(slam_work STATIC
+  slam_work.h
+  slam_work.cc
+)
+
+target_link_libraries(slam_work
+  loader depth_generator orb_matcher icp_translator 
+  ${OpenCV_LIBS}
+)
+
 add_executable(final_project final_project.cpp)
-target_link_libraries(final_project ${OpenCV_LIBS} ${Sophus_LIBRARIES} ${Pangolin_LIBRARIES} ${G2O_LIBS} ${CHOLMOD_LIBRARIES})
+target_link_libraries(final_project slam_work ${OpenCV_LIBS} ${Sophus_LIBRARIES} ${Pangolin_LIBRARIES} ${G2O_LIBS} ${CHOLMOD_LIBRARIES})

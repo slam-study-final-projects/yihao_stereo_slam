@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <vector>
 
+#include "slam_work.h"
+
 using namespace std;
 using namespace Eigen;
 
